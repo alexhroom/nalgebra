@@ -92,6 +92,14 @@ where
 
         let dim = m.shape_generic().0;
 
+        // this algorithm creates NaNs on the zero matrix; this is a workaround
+        if m.is_zero(eps) {
+            let q = OMatrix::<T, D, D>::identity();
+            let t = OMatrix::<T, D, D>::zero();
+
+            return Some((q, t));
+        }
+
         // Specialization would make this easier.
         if dim.value() == 0 {
             let vecs = Some(OMatrix::from_element_generic(dim, dim, T::zero()));
