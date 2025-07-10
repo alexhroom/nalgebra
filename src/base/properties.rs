@@ -51,7 +51,7 @@ impl<T, R: Dim, C: Dim, S: RawStorage<T, R, C>> Matrix<T, R, C, S> {
     }
 
     // TODO: RelativeEq prevents us from using those methods on integer matrices…
-    /// Indicated if this is the identity matrix within a relative error of `eps`.
+    /// Indicates if this is the identity matrix within a relative error of `eps`.
     ///
     /// If the matrix is diagonal, this checks that diagonal elements (i.e. at coordinates `(i, i)`
     /// for i from `0` to `min(R, C)`) are equal one; and that all other elements are zero.
@@ -69,6 +69,29 @@ impl<T, R: Dim, C: Dim, S: RawStorage<T, R, C>> Matrix<T, R, C, S> {
                 let el = unsafe { self.get_unchecked((i, j)) };
                 if (i == j && !relative_eq!(*el, T::one(), epsilon = eps.clone()))
                     || (i != j && !relative_eq!(*el, T::zero(), epsilon = eps.clone()))
+                {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    /// Indicates if this is the zero matrix within a relative error of `eps`.
+    #[inline]
+    #[must_use]
+    pub fn is_zero(&self, eps: T::Epsilon) -> bool
+    where
+        T: Zero + One + RelativeEq,
+        T::Epsilon: Clone,
+    {
+        let (nrows, ncols) = self.shape();
+
+        for j in 0..ncols {
+            for i in 0..nrows {
+                let el = unsafe { self.get_unchecked((i, j)) };
+                if (!relative_eq!(*el, T::zero(), epsilon = eps.clone()))
                 {
                     return false;
                 }
